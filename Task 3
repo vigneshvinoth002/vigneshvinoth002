@@ -1,0 +1,48 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+# Verify file path and load the CSV
+file_path = 'F:/python assignment/Customers.csv'
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+else:
+    print("File not found.")
+
+# Display the first few rows of the dataframe
+print(df.head())
+
+# Encode the 'Gender' column as binary
+df['Gender'] = df['Gender'].apply(lambda g: 1 if g == 'Male' else 0)
+
+# One-hot encode the 'Profession' column
+one_hot_encoded = pd.get_dummies(df['Profession'], prefix='Profession', dtype=int)
+
+# Concatenate the original dataframe with the one-hot encoded dataframe
+df_encoded = pd.concat([df, one_hot_encoded], axis=1)
+
+# Drop the original 'Profession' column
+df_encoded.drop(['Profession'], axis=1, inplace=True)
+
+# Display the first few rows of the updated dataframe
+print(df_encoded.head())
+
+# Perform KMeans clustering
+from sklearn.cluster import KMeans
+
+# Initialize an empty list to store the WCSS values
+wcss = []
+
+# Calculate WCSS for different values of k
+for k in range(1, 15):
+    k_means = KMeans(n_clusters=k, random_state=42)
+    k_means.fit(df_encoded)
+    wcss.append(k_means.inertia_)
+
+# Plot the WCSS values to determine the optimal number of clusters
+plt.plot(range(1, 15), wcss)
+plt.xlabel('Number of clusters (k)')
+plt.ylabel('WCSS')
+plt.title('Elbow Method for Optimal k')
+plt.show()
